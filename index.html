@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Barber X - Assistant</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #777;
+      margin-bottom: 25px;
+    }
+
+    .chat {
+      height: 350px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px 14px;
+      border-radius: 12px;
+      max-width: 80%;
+    }
+
+    .bot {
+      background: #eeeeee;
+    }
+
+    .user {
+      background: #111;
+      color: white;
+      margin-left: auto;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      flex: 1;
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      border: none;
+      background: #111;
+      color: white;
+      padding: 13px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>💈 Barber X</h1>
+
+    <div class="subtitle">
+      Assistant du salon
+    </div>
+
+    <div class="chat" id="chat">
+
+      <div class="message bot">
+        Bonjour 👋 Comment puis-je vous aider ?
+      </div>
+
+    </div>
+
+    <div class="input-area">
+
+      <input
+        id="question"
+        type="text"
+        placeholder="Posez votre question..."
+      >
+
+      <button onclick="askAssistant()">
+        Envoyer
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <script>
+
+    const barberInfo = {
+
+      prices: {
+        coupe: "20 €",
+        barbe: "15 €",
+        coupeBarbe: "30 €",
+        enfant: "15 €"
+      },
+
+      horaires: {
+        semaine: "10h à 19h",
+        dimanche: "fermé"
+      },
+
+      adresse: "15 rue Exemple, Paris"
+
+    };
+
+
+    function addMessage(text, type) {
+
+      const chat = document.getElementById("chat");
+
+      const message = document.createElement("div");
+
+      message.classList.add("message", type);
+
+      message.textContent = text;
+
+      chat.appendChild(message);
+
+      chat.scrollTop = chat.scrollHeight;
+
+    }
+
+
+    function askAssistant() {
+
+      const input = document.getElementById("question");
+
+      const question = input.value.toLowerCase().trim();
+
+      if (!question) return;
+
+      addMessage(input.value, "user");
+
+      input.value = "";
+
+      let answer = "";
+
+
+      if (
+        question.includes("prix") ||
+        question.includes("coût") ||
+        question.includes("cout") ||
+        question.includes("tarif")
+      ) {
+
+        answer =
+          "Voici nos tarifs : coupe " +
+          barberInfo.prices.coupe +
+          ", coupe + barbe " +
+          barberInfo.prices.coupeBarbe +
+          ", coupe enfant " +
+          barberInfo.prices.enfant +
+          ".";
+
+      }
+
+
+      else if (question.includes("barbe")) {
+
+        answer =
+          "La coupe + barbe coûte " +
+          barberInfo.prices.coupeBarbe +
+          ".";
+
+      }
+
+
+      else if (
+        question.includes("horaire") ||
+        question.includes("ouvert") ||
+        question.includes("ouvre")
+      ) {
+
+        answer =
+          "Nous sommes ouverts du lundi au samedi de " +
+          barberInfo.horaires.semaine +
+          ". Dimanche : " +
+          barberInfo.horaires.dimanche +
+          ".";
+
+      }
+
+
+      else if (question.includes("dimanche")) {
+
+        answer =
+          "Nous sommes fermés le dimanche.";
+
+      }
+
+
+      else if (
+        question.includes("adresse") ||
+        question.includes("où") ||
+        question.includes("ou")
+      ) {
+
+        answer =
+          "Nous sommes situés au " +
+          barberInfo.adresse +
+          ".";
+
+      }
+
+
+      else if (question.includes("enfant")) {
+
+        answer =
+          "Oui, nous proposons une coupe enfant à " +
+          barberInfo.prices.enfant +
+          ".";
+
+      }
+
+
+      else {
+
+        answer =
+          "Je n'ai pas encore cette information. Vous pouvez contacter directement le barber pour obtenir une réponse.";
+
+      }
+
+
+      setTimeout(function() {
+
+        addMessage(answer, "bot");
+
+      }, 400);
+
+    }
+
+
+    document.getElementById("question").addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "Enter") {
+
+          askAssistant();
+
+        }
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
