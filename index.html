@@ -3,84 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Barber X - Assistant</title>
 
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      background: #111;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
     }
 
     .container {
-      max-width: 600px;
-      margin: 50px auto;
-      background: white;
+      width: 90%;
+      max-width: 500px;
+      background: #1d1d1d;
       padding: 25px;
       border-radius: 18px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+      box-shadow: 0 0 25px rgba(0,0,0,0.5);
     }
 
     h1 {
+      text-align: center;
       margin-bottom: 5px;
     }
 
     .subtitle {
-      color: #777;
+      text-align: center;
+      color: #aaa;
       margin-bottom: 25px;
     }
 
-    .chat {
+    #chat {
       height: 350px;
       overflow-y: auto;
-      border: 1px solid #ddd;
-      border-radius: 12px;
+      background: #111;
       padding: 15px;
+      border-radius: 12px;
       margin-bottom: 15px;
     }
 
     .message {
       margin: 10px 0;
-      padding: 10px 14px;
-      border-radius: 12px;
-      max-width: 80%;
-    }
-
-    .bot {
-      background: #eeeeee;
+      padding: 10px 13px;
+      border-radius: 10px;
+      line-height: 1.4;
     }
 
     .user {
-      background: #111;
-      color: white;
-      margin-left: auto;
+      background: #333;
+      text-align: right;
+    }
+
+    .bot {
+      background: #222;
     }
 
     .input-area {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
     input {
       flex: 1;
       padding: 13px;
-      border: 1px solid #ccc;
+      border: none;
       border-radius: 10px;
       font-size: 16px;
     }
 
     button {
-      border: none;
-      background: #111;
-      color: white;
       padding: 13px 18px;
+      border: none;
       border-radius: 10px;
       cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.8;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -88,198 +88,89 @@
 <body>
 
   <div class="container">
-
     <h1>💈 Barber X</h1>
+    <div class="subtitle">Assistant du salon</div>
 
-    <div class="subtitle">
-      Assistant du salon
-    </div>
-
-    <div class="chat" id="chat">
-
+    <div id="chat">
       <div class="message bot">
-        Bonjour 👋 Comment puis-je vous aider ?
+        Bonjour 👋 Je suis l'assistant de Barber X. Comment puis-je vous aider ?
       </div>
-
     </div>
 
     <div class="input-area">
-
       <input
         id="question"
         type="text"
         placeholder="Posez votre question..."
+        onkeydown="if(event.key === 'Enter') sendQuestion()"
       >
 
-      <button onclick="askAssistant()">
-        Envoyer
-      </button>
-
+      <button onclick="sendQuestion()">Envoyer</button>
     </div>
-
   </div>
 
-
   <script>
+    const WORKER_URL =
+      "https://barber-ai-server.mohamedkama75.workers.dev";
 
-    const barberInfo = {
-
-      prices: {
-        coupe: "20 €",
-        barbe: "15 €",
-        coupeBarbe: "30 €",
-        enfant: "15 €"
-      },
-
-      horaires: {
-        semaine: "10h à 19h",
-        dimanche: "fermé"
-      },
-
-      adresse: "15 rue Exemple, Paris"
-
-    };
-
-
-    function addMessage(text, type) {
-
+    async function sendQuestion() {
+      const input = document.getElementById("question");
       const chat = document.getElementById("chat");
 
-      const message = document.createElement("div");
-
-      message.classList.add("message", type);
-
-      message.textContent = text;
-
-      chat.appendChild(message);
-
-      chat.scrollTop = chat.scrollHeight;
-
-    }
-
-
-    function askAssistant() {
-
-      const input = document.getElementById("question");
-
-      const question = input.value.toLowerCase().trim();
+      const question = input.value.trim();
 
       if (!question) return;
 
-      addMessage(input.value, "user");
+      // Afficher le message du client
+      const userMessage = document.createElement("div");
+      userMessage.className = "message user";
+      userMessage.textContent = question;
+      chat.appendChild(userMessage);
 
       input.value = "";
 
-      let answer = "";
+      // Message temporaire
+      const loadingMessage = document.createElement("div");
+      loadingMessage.className = "message bot";
+      loadingMessage.textContent = "Je réfléchis...";
+      chat.appendChild(loadingMessage);
 
+      chat.scrollTop = chat.scrollHeight;
 
-      if (
-        question.includes("prix") ||
-        question.includes("coût") ||
-        question.includes("cout") ||
-        question.includes("tarif")
-      ) {
+      try {
+        const response = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            question: question
+          })
+        });
 
-        answer =
-          "Voici nos tarifs : coupe " +
-          barberInfo.prices.coupe +
-          ", coupe + barbe " +
-          barberInfo.prices.coupeBarbe +
-          ", coupe enfant " +
-          barberInfo.prices.enfant +
-          ".";
+        const data = await response.json();
 
-      }
+        loadingMessage.remove();
 
+        const botMessage = document.createElement("div");
+        botMessage.className = "message bot";
 
-      else if (question.includes("barbe")) {
-
-        answer =
-          "La coupe + barbe coûte " +
-          barberInfo.prices.coupeBarbe +
-          ".";
-
-      }
-
-
-      else if (
-        question.includes("horaire") ||
-        question.includes("ouvert") ||
-        question.includes("ouvre")
-      ) {
-
-        answer =
-          "Nous sommes ouverts du lundi au samedi de " +
-          barberInfo.horaires.semaine +
-          ". Dimanche : " +
-          barberInfo.horaires.dimanche +
-          ".";
-
-      }
-
-
-      else if (question.includes("dimanche")) {
-
-        answer =
-          "Nous sommes fermés le dimanche.";
-
-      }
-
-
-      else if (
-        question.includes("adresse") ||
-        question.includes("où") ||
-        question.includes("ou")
-      ) {
-
-        answer =
-          "Nous sommes situés au " +
-          barberInfo.adresse +
-          ".";
-
-      }
-
-
-      else if (question.includes("enfant")) {
-
-        answer =
-          "Oui, nous proposons une coupe enfant à " +
-          barberInfo.prices.enfant +
-          ".";
-
-      }
-
-
-      else {
-
-        answer =
-          "Je n'ai pas encore cette information. Vous pouvez contacter directement le barber pour obtenir une réponse.";
-
-      }
-
-
-      setTimeout(function() {
-
-        addMessage(answer, "bot");
-
-      }, 400);
-
-    }
-
-
-    document.getElementById("question").addEventListener(
-      "keydown",
-      function(event) {
-
-        if (event.key === "Enter") {
-
-          askAssistant();
-
+        if (data.answer) {
+          botMessage.textContent = data.answer;
+        } else {
+          botMessage.textContent =
+            "Désolé, une erreur est survenue.";
         }
 
-      }
-    );
+        chat.appendChild(botMessage);
 
+      } catch (error) {
+        loadingMessage.textContent =
+          "Impossible de contacter l'assistant pour le moment.";
+      }
+
+      chat.scrollTop = chat.scrollHeight;
+    }
   </script>
 
 </body>
